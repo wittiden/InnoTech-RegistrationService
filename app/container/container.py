@@ -2,7 +2,9 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, async_sessionmaker, create_async_engine
 from dishka import AsyncContainer, make_async_container, Provider, provide, Scope
+from keycloak import KeycloakOpenID, KeycloakAdmin
 
+from app.modules.auth.config import keycloak_config
 from app.infrastructure.database.config import database_config
 
 
@@ -41,10 +43,35 @@ class DatabaseSessionProvider(Provider):
             yield async_session
 
 
+class KeycloakClientProvider(Provider):
+    """Провайдер по созданию клиента Keycloak"""
+
+    scope = Scope.APP
+
+    @provide
+    def build_keycloak_openid(self) -> KeycloakOpenID:
+        return KeycloakOpenID(
+            server_url=keycloak_config.KC_URL,
+            realm_name=keycloak_config.KC_REALM,
+            client_id=keycloak_config.KC_CLIENT_ID,
+            client_secret_key=keycloak_config.KC_CLIENT_SECRET
+        )
+
+    @provide
+    def build_keycloak_admin(self) -> KeycloakAdmin:
+        return KeycloakAdmin(
+            server_url=keycloak_config.KC_URL,
+            realm_name=keycloak_config.KC_REALM,
+            client_id=keycloak_config.KC_CLIENT_ID,
+            client_secret_key=keycloak_config.KC_CLIENT_SECRET
+        )
+
+
 def build_async_container() -> AsyncContainer:
     container = make_async_container(
         DatabaseEngineProvider(),
         DatabaseSessionProvider(),
+        KeycloakClientProvider(),
     )
 
     return container
