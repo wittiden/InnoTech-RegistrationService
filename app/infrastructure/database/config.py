@@ -16,4 +16,8 @@ class DatabaseConfig(BaseSettings):
         extra='ignore',
     )
 
+    @property
+    def database_url(self) -> str:
+        return f'postgresql://{self.APP_DB_USER}:{self.APP_DB_PASS}@{self.APP_DB_HOST}:{self.APP_DB_PORT}/{self.APP_DB_NAME}'
+
 database_config = DatabaseConfig()
