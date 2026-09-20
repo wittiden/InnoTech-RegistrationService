@@ -1,0 +1,108 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: registration_service_app:${PROJECT_VERSION}
+    container_name: registration_service_app
+    restart: unless-stopped
+    networks:
+      - network
+    ports:
+      - "${APP_SERVER_PORT}:8000"
+    depends_on:
+      app_postgres:
+        condition: service_healthy
+    stop_grace_period: 30s
+    env_file:
+      - .env
+    develop:
+      watch:
+        - action: sync+restart
+          target: /app
+          path: .
+        - action: rebuild
+          path: requirements.txt
+
+  app_postgres:
+    image: postgres:16-alpine
+    container_name: registration_service_app_postgres
+    networks:
+      - network
+    environment:
+      - POSTGRES_USER=${APP_DB_USER}
+      - POSTGRES_PASSWORD=${APP_DB_PASS}
+      - POSTGRES_DB=${APP_DB_NAME}
+    volumes:
+      - app_postgres_volume:/var/lib/postgresql/data
+    restart: unless-stopped
+    ports:
+      - "${APP_DB_PORT}:5432"
+    stop_grace_period: 30s
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${APP_DB_USER} -d ${APP_DB_NAME} || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kc_postgres:
+    image: postgres:16-alpine
+    container_name: registration_service_kc_postgres
+    networks:
+      - network
+    ports:
+      - "${KC_DB_PORT}:5432"
+    stop_grace_period: 30s
+    environment:
+      - POSTGRES_USER=${KC_DB_USER}
+      - POSTGRES_PASSWORD=${KC_DB_PASS}
+      - POSTGRES_DB=${KC_DB_NAME}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8
+    restart: unless-stopped
+    volumes:
+      - kc_postgres_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${KC_DB_USER} -d ${KC_DB_NAME} || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: keycloak/keycloak:26.0
+    container_name: registration_service_keycloak
+    restart: unless-stopped
+    command: start-dev
+    networks:
+      - network
+    ports:
+      - "${KC_PORT}:8080"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_ADMIN_USERNAME}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://${KC_DB_HOST}:5432/${KC_DB_NAME}
+      - KC_DB_USERNAME=${KC_DB_USER}
+      - KC_DB_PASSWORD=${KC_DB_PASS}
+      - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+    depends_on:
+      kc_postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "{ printf 'HEAD /health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+
+networks:
+  network:
+    driver: bridge
+    name: registration_service_network
+
+volumes:
+  app_postgres:
+    name: registration_service_app_postgres_volume
+  kc_postgres:
+    name: registration_service_kc_postgres_volume
