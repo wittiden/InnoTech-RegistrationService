@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from dishka.integrations.fastapi import setup_dishka
 
+from app.bootstrap.routers import setup_routers
 from app.common.config import application_config
 from app.common.handlers.base import BaseError
 from app.container.container import async_container
@@ -20,5 +21,7 @@ def setup_application() -> FastAPI:
     setup_dishka(async_container, app)
 
     app.add_exception_handler(BaseError, exception_handler)
+
+    setup_routers(app)
 
     return app
