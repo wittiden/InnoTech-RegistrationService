@@ -1,4 +1,3 @@
-from fastapi import FastAPI
+from app.bootstrap.application import setup_application
 
-app = FastAPI()
-
+app = setup_application()
