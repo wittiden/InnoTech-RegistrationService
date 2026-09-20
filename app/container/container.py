@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, async_sessionmaker
 from dishka import AsyncContainer, make_async_container, Provider, provide, Scope
 from keycloak import KeycloakOpenID, KeycloakAdmin
 
-from app.modules.auth.config import keycloak_config
+from app.infrastructure.keycloak.config import keycloak_config
 from app.infrastructure.database.config import database_config
 
 

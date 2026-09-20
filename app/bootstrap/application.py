@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from dishka.integrations.fastapi import setup_dishka
 
 from app.common.config import application_config
+from app.common.handlers.base import BaseError
 from app.container.container import async_container
+from app.common.handlers.exception import exception_handler
 
 
 def setup_application() -> FastAPI:
@@ -16,5 +18,7 @@ def setup_application() -> FastAPI:
     )
 
     setup_dishka(async_container, app)
+
+    app.add_exception_handler(BaseError, exception_handler)
 
     return app
