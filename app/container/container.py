@@ -64,8 +64,8 @@ class KeycloakClientProvider(Provider):
         return KeycloakAdmin(
             server_url=keycloak_config.KC_URL,
             realm_name=keycloak_config.KC_REALM,
-            client_id=keycloak_config.KC_CLIENT_ID,
-            client_secret_key=keycloak_config.KC_CLIENT_SECRET
+            client_id=keycloak_config.KC_ADMIN_ID,
+            client_secret_key=keycloak_config.KC_ADMIN_SECRET
         )
 
 
