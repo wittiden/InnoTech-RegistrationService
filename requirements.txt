@@ -9,3 +9,5 @@ pydantic-settings~=2.15.0
 
 sqlalchemy~=2.0.54
 asyncpg~=0.31.0
+
+loguru~=0.7.3
