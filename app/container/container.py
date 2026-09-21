@@ -7,7 +7,7 @@ from keycloak import KeycloakOpenID, KeycloakAdmin
 from app.infrastructure.keycloak.config import keycloak_config
 from app.infrastructure.database.config import database_config
 from app.modules.auth.service.use_cases import LoginUserCase, LogoutUserCase, RefreshTokenCase
-from app.modules.users.service.use_cases import CreateUserCase
+from app.modules.users.service.use_cases import CreateUserCase, ShowUserCase
 
 
 class DatabaseEngineProvider(Provider):
@@ -95,6 +95,10 @@ class UserCaseProvider(Provider):
     @provide
     def create_user(self, keycloak_admin: KeycloakAdmin) -> CreateUserCase:
         return CreateUserCase(keycloak_admin)
+
+    @provide
+    def show_current(self, keycloak_openid: KeycloakOpenID) -> ShowUserCase:
+        return ShowUserCase(keycloak_openid)
 
 
 def build_async_container() -> AsyncContainer:

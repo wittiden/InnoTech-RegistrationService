@@ -38,7 +38,7 @@ class CreateUserCase:
         except KeycloakError as exc:
             raise GeneralKeycloakError(str(exc)) from exc
 
-        return CreateUserDTO(id=UUID(user_id))
+        return CreateUserDTO(sub=UUID(user_id))
 
 
 class ShowUserCase:

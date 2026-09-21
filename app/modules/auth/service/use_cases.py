@@ -17,10 +17,8 @@ class LoginUserCase:
     async def login(self, username: str, password: str) -> LoginDTO:
         try:
             payload = await self._keycloak_openid.a_token(username, password)
-        except KeycloakPostError as exc:
+        except (KeycloakPostError, KeycloakAuthenticationError) as exc:
             raise LoginError('Invalid username or password') from exc
-        except KeycloakAuthenticationError as exc:
-            raise KeycloakAuthError('Keycloak auth failed') from exc
         except KeycloakConnectionError as exc:
             raise GeneralKeycloakConnectionError('Keycloak server is not available') from exc
         except KeycloakError as exc:

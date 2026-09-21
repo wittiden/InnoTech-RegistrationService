@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class FullUserInfoDTO(BaseModel):
     id: UUID = Field(validation_alias='sub')
-    name: str | None = Field(default=None)
     username: str = Field(validation_alias='preferred_username')
     email: str
     email_verified: bool
