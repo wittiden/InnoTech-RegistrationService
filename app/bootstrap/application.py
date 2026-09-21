@@ -5,12 +5,15 @@ from app.bootstrap.middlewares import setup_middlewares
 from app.bootstrap.routers import setup_routers
 from app.common.config import application_config
 from app.common.handlers.utils.base import BaseError
+from app.common.logger.config import setup_logger
 from app.container.container import async_container
 from app.common.handlers.exception import exception_handler
 from app.infrastructure.http.lifespan import lifespan
 
 
 def setup_application() -> FastAPI:
+    setup_logger()
+
     app = FastAPI(
         lifespan=lifespan,
         title='RegistrationService',
