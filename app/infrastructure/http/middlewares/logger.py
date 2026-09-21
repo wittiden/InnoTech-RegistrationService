@@ -16,11 +16,11 @@ class LoggerMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
 
-        if not '/api/v1' in request.url.path:
+        if not request.url.path.startswith('/api/v1'):
             return response
 
         process_time = (perf_counter() - start_time) * 1000
-        process_time_str = f'{str(process_time):.2f} ms'
+        process_time_str = f'{process_time:.2f} ms'
         log_srt = f'{request_id} | {request.url.path} | {response.status_code} | {process_time_str}'
 
         if 200 <= response.status_code < 300:
@@ -31,6 +31,6 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             logger.error(log_srt)
 
         response.headers['X-Request-ID'] = str(request_id)
-        response.headers['X-Process-Time'] = f'{str(perf_counter() - start_time):.2f} ms'
+        response.headers['X-Process-Time'] = process_time_str
 
         return response

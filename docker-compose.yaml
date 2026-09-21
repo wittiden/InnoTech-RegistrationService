@@ -73,7 +73,7 @@ services:
     image: keycloak/keycloak:26.0
     container_name: registration_service_keycloak
     restart: unless-stopped
-    command: start-dev
+    command: start-dev --import-realm
     networks:
       - network
     ports:
@@ -87,6 +87,9 @@ services:
       - KC_DB_PASSWORD=${KC_DB_PASS}
       - KC_HTTP_ENABLED=true
       - KC_HEALTH_ENABLED=true
+    volumes:
+      - ./keycloak-export:/tmp/export
+      - ./keycloak/import:/opt/keycloak/data/import
     depends_on:
       kc_postgres:
         condition: service_healthy

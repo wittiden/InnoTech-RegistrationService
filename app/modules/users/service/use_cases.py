@@ -24,6 +24,7 @@ class CreateUserCase:
                     'firstName': first_name,
                     'lastName': last_name,
                     'enabled': True,
+                    'requiredActions': ['VERIFY_EMAIL'],
                     'credentials': [
                         {'type': 'password', 'value': password, 'temporary': False}
                     ],
