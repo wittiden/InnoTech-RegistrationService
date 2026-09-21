@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from keycloak import KeycloakAdmin, KeycloakError, KeycloakPostError, KeycloakConnectionError, KeycloakAuthenticationError
+from keycloak import KeycloakAdmin, KeycloakOpenID, KeycloakError, KeycloakPostError, KeycloakConnectionError, KeycloakAuthenticationError, KeycloakGetError
 
-from app.modules.users.contracts.dtos import CreateUserDTO
-from app.modules.users.exceptions import CreateUserError, CreateUserValidError, GeneralKeycloakError, GeneralKeycloakConnectionError, KeycloakAuthError
+from app.modules.users.contracts.dtos import CreateUserDTO, FullUserInfoDTO
+from app.modules.users.exceptions import CreateUserError, GeneralKeycloakError, GeneralKeycloakConnectionError, KeycloakAuthError, ShowUserError
 
 
 class CreateUserCase:
@@ -37,7 +37,26 @@ class CreateUserCase:
         except KeycloakError as exc:
             raise GeneralKeycloakError(str(exc)) from exc
 
+        return CreateUserDTO(id=UUID(user_id))
+
+
+class ShowUserCase:
+    """Кейс по показу пользователей"""
+
+    __slots__ = ('_keycloak_openid',)
+
+    def __init__(self, keycloak_openid: KeycloakOpenID) -> None:
+        self._keycloak_openid = keycloak_openid
+
+    async def show_current(self, access_token: str) -> FullUserInfoDTO:
         try:
-            return CreateUserDTO(id=UUID(user_id))
-        except (ValueError, TypeError) as exc:
-            raise CreateUserValidError('Unknown fields') from exc
+            obj = await self._keycloak_openid.a_userinfo(access_token)
+
+        except (KeycloakGetError, KeycloakAuthenticationError) as exc:
+            raise ShowUserError('Invalid access token') from exc
+        except KeycloakConnectionError as exc:
+            raise GeneralKeycloakConnectionError('Keycloak server is not available') from exc
+        except KeycloakError as exc:
+            raise GeneralKeycloakError(str(exc)) from exc
+
+        return FullUserInfoDTO.model_validate(obj)
