@@ -6,6 +6,8 @@ from keycloak import KeycloakOpenID, KeycloakAdmin
 
 from app.infrastructure.keycloak.config import keycloak_config
 from app.infrastructure.database.config import database_config
+from app.modules.auth.service.use_cases import LoginUserCase, LogoutUserCase, RefreshTokenCase
+from app.modules.users.service.use_cases import CreateUserCase
 
 
 class DatabaseEngineProvider(Provider):
@@ -67,11 +69,41 @@ class KeycloakClientProvider(Provider):
         )
 
 
+class AuthCaseProvider(Provider):
+    """Провайдер по созданию кейсов аутентификации"""
+
+    scope = Scope.REQUEST
+
+    @provide
+    def create_login(self, keycloak_openid: KeycloakOpenID) -> LoginUserCase:
+        return LoginUserCase(keycloak_openid)
+
+    @provide
+    def create_logout(self, keycloak_openid: KeycloakOpenID) -> LogoutUserCase:
+        return LogoutUserCase(keycloak_openid)
+
+    @provide
+    def create_refresh(self, keycloak_openid: KeycloakOpenID) -> RefreshTokenCase:
+        return RefreshTokenCase(keycloak_openid)
+
+
+class UserCaseProvider(Provider):
+    """Провайдер по созданию кейсов пользователей"""
+
+    scope = Scope.REQUEST
+
+    @provide
+    def create_user(self, keycloak_admin: KeycloakAdmin) -> CreateUserCase:
+        return CreateUserCase(keycloak_admin)
+
+
 def build_async_container() -> AsyncContainer:
     container = make_async_container(
         DatabaseEngineProvider(),
         DatabaseSessionProvider(),
         KeycloakClientProvider(),
+        AuthCaseProvider(),
+        UserCaseProvider(),
     )
 
     return container

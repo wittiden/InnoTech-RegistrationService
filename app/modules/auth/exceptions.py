@@ -1,4 +1,4 @@
-from app.common.handlers.base import BaseError
+from app.common.handlers.utils.base import BaseError
 
 
 class AuthError(BaseError):

@@ -3,7 +3,7 @@ from dishka.integrations.fastapi import setup_dishka
 
 from app.bootstrap.routers import setup_routers
 from app.common.config import application_config
-from app.common.handlers.base import BaseError
+from app.common.handlers.utils.base import BaseError
 from app.container.container import async_container
 from app.common.handlers.exception import exception_handler
 
