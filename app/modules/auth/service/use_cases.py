@@ -1,7 +1,9 @@
-from keycloak import KeycloakOpenID
+from keycloak import KeycloakOpenID, KeycloakPostError, KeycloakAuthenticationError, KeycloakConnectionError, \
+    KeycloakError
 
 from app.modules.auth.contracts.dtos import LoginDTO, RefreshDTO
 from app.modules.auth.exceptions import LoginError, LogoutError, RefreshError
+from app.infrastructure.keycloak.excaptions import GeneralKeycloakError, KeycloakAuthError, GeneralKeycloakConnectionError
 
 
 class LoginUserCase:
@@ -15,8 +17,14 @@ class LoginUserCase:
     async def login(self, username: str, password: str) -> LoginDTO:
         try:
             payload = await self._keycloak_openid.a_token(username, password)
-        except Exception as exc:
+        except KeycloakPostError as exc:
             raise LoginError('Invalid username or password') from exc
+        except KeycloakAuthenticationError as exc:
+            raise KeycloakAuthError('Keycloak auth failed') from exc
+        except KeycloakConnectionError as exc:
+            raise GeneralKeycloakConnectionError('Keycloak server is not available') from exc
+        except KeycloakError as exc:
+            raise GeneralKeycloakError(str(exc)) from exc
 
         return LoginDTO.model_validate(payload)
 
@@ -32,8 +40,14 @@ class LogoutUserCase:
     async def logout(self, refresh_token: str) -> None:
         try:
             await self._keycloak_openid.a_logout(refresh_token)
-        except Exception as exc:
+        except KeycloakPostError as exc:
             raise LogoutError('Invalid refresh token') from exc
+        except KeycloakAuthenticationError as exc:
+            raise KeycloakAuthError('Keycloak auth failed') from exc
+        except KeycloakConnectionError as exc:
+            raise GeneralKeycloakConnectionError('Keycloak server is not available') from exc
+        except KeycloakError as exc:
+            raise GeneralKeycloakError(str(exc)) from exc
 
 
 class RefreshTokenCase:
@@ -47,7 +61,13 @@ class RefreshTokenCase:
     async def refresh(self, refresh_token: str) -> RefreshDTO:
         try:
             new_token = await self._keycloak_openid.a_refresh_token(refresh_token)
-        except Exception as exc:
+        except KeycloakPostError as exc:
             raise RefreshError('Burned refresh token') from exc
+        except KeycloakAuthenticationError as exc:
+            raise KeycloakAuthError('Keycloak auth failed') from exc
+        except KeycloakConnectionError as exc:
+            raise GeneralKeycloakConnectionError('Keycloak server is not available') from exc
+        except KeycloakError as exc:
+            raise GeneralKeycloakError(str(exc)) from exc
 
         return RefreshDTO.model_validate(new_token)

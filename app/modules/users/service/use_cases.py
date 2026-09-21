@@ -3,7 +3,8 @@ from uuid import UUID
 from keycloak import KeycloakAdmin, KeycloakOpenID, KeycloakError, KeycloakPostError, KeycloakConnectionError, KeycloakAuthenticationError, KeycloakGetError
 
 from app.modules.users.contracts.dtos import CreateUserDTO, FullUserInfoDTO
-from app.modules.users.exceptions import CreateUserError, GeneralKeycloakError, GeneralKeycloakConnectionError, KeycloakAuthError, ShowUserError
+from app.modules.users.exceptions import CreateUserError, ShowUserError
+from app.infrastructure.keycloak.excaptions import GeneralKeycloakError, KeycloakAuthError, GeneralKeycloakConnectionError
 
 
 class CreateUserCase:
